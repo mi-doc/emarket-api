@@ -1,0 +1,24 @@
+#!/home/mihail/Apps/emarket_api/bin/python3.5
+
+import requests
+import sys
+from prettytable import PrettyTable
+
+print('wait... \n')
+r = requests.get('https://emarket-shop.herokuapp.com/api/products-list')
+products = r.json()
+
+if len(sys.argv) > 1:
+    keys = sys.argv[1:]
+else:
+    keys = ['name']
+
+table = PrettyTable(keys) 
+for product in products:
+    vals = []
+    for key in keys:
+        val = product[key]
+        vals.append(val)
+    table.add_row(vals)
+print(table)
+
