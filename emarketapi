@@ -1,24 +1,52 @@
 #!/home/mihail/Apps/emarket_api/bin/python3.5
 
-import requests
+import asyncio
 import sys
+import requests
 from prettytable import PrettyTable
 
-print('wait... \n')
-r = requests.get('https://emarket-shop.herokuapp.com/api/products-list')
-products = r.json()
 
-if len(sys.argv) > 1:
-    keys = sys.argv[1:]
-else:
-    keys = ['name']
+#print('wait... \n')
+#r = requests.get('https://emarket-shop.herokuapp.com/api/products-list')
+#products = r.json()
+#
+#if len(sys.argv) > 1:
+#    keys = sys.argv[1:]
+#else:
+#    keys = ['name']
+#
+#table = PrettyTable(keys) 
+#for product in products:
+#    vals = []
+#    for key in keys:
+#        val = product[key]
+#        vals.append(val)
+#    table.add_row(vals)
+#print(table)
+#
+async def fetch_product_list(url, loop):
+	await r = requests.get(url)
+	products = r.json()
+	return products
 
-table = PrettyTable(keys) 
-for product in products:
-    vals = []
-    for key in keys:
-        val = product[key]
-        vals.append(val)
-    table.add_row(vals)
-print(table)
+async def timer(sec):
+	for s in range(sec):
+		print(s)
+		await asyncio.sleep(1)
 
+def prettyprint(products, keys):
+	table = PrettyTable(keys) 
+	for product in products:
+	        vals = []
+	        for key in keys:
+			val = product[key]
+	        	vals.append(val)
+	        table.add_row(vals)
+    print(table)
+  
+ 
+def run ():
+
+
+if '__name__' == "__main__":
+	run()
