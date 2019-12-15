@@ -1,17 +1,12 @@
+import argparse
 import asyncio
 import aiohttp
-# import sys
+import sys
 from prettytable import PrettyTable
-from concurrent.futures import ALL_COMPLETED, FIRST_COMPLETED
+from concurrent.futures import FIRST_COMPLETED
 
 
 URL = 'https://emarket-shop.herokuapp.com/api/products-list'
-
-
-# if len(sys.argv) > 1:
-#     keys = sys.argv[1:]
-# else:
-#     keys = ['name']
 
 
 def prettyprint(products, keys):
@@ -26,10 +21,11 @@ def prettyprint(products, keys):
 
 
 async def fetch_product_list():
+    # TODO: product parameters should be specified in request
+    # not picked on client side.
     async with aiohttp.ClientSession() as session:
-        async with session.get(URL) as session:
-           products = await session.json()
-    return products
+        async with session.get(URL) as r:
+            return await r.json()
 
 
 async def timer(sec):
@@ -52,11 +48,15 @@ async def asyncFetchAndPrint(keys):
         future.cancel()
 
 
-def main():
+def main(keys):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncFetchAndPrint(keys=['name']))
+    loop.run_until_complete(asyncFetchAndPrint(keys))
     loop.close()
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        keys = sys.argv[1:]
+    else:
+        keys = ['name']
+    main(keys)
