@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import aiohttp
 import sys
@@ -12,10 +11,7 @@ URL = 'https://emarket-shop.herokuapp.com/api/products-list'
 def prettyprint(products, keys):
     table = PrettyTable(keys)
     for product in products:
-        vals = []
-        for key in keys:
-            val = product[key]
-            vals.append(val)
+        vals = [product[key] for key in keys]
         table.add_row(vals)
     print(table)
 
@@ -34,29 +30,28 @@ async def timer(sec):
         await asyncio.sleep(1)
 
 
-async def asyncFetchAndPrint(keys):
+async def main(keys):
     task_fetch = asyncio.ensure_future(fetch_product_list())
-    task_timer = asyncio.ensure_future(timer(22))
+    task_timer = asyncio.ensure_future(timer(5))
     tasks = [task_timer, task_fetch]
-    done, pending = await asyncio.wait(tasks, return_when=FIRST_COMPLETED)
 
-    if task_fetch in done:
-        products = task_fetch.result()
-        prettyprint(products, keys)
+    while True:
+        done, pending = await asyncio.wait(tasks, return_when=FIRST_COMPLETED)
+        if task_fetch in done:
+            break
 
     for future in pending:
         future.cancel()
 
-
-def main(keys):
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncFetchAndPrint(keys))
-    loop.close()
-
+    products = task_fetch.result()
+    prettyprint(products, keys)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         keys = sys.argv[1:]
     else:
         keys = ['name']
-    main(keys)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(keys))
+    loop.close()
