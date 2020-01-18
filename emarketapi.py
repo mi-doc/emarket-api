@@ -3,36 +3,36 @@ import aiohttp
 import sys
 from prettytable import PrettyTable
 from concurrent.futures import FIRST_COMPLETED
+import json
 
 
-URL = 'https://emarket-shop.herokuapp.com/api/products-list'
-
+URL = 'https://emarket-shop.herokuapp.com/api/products-list/'
+# URL = 'http://127.0.0.1:8000/api/products-list/'
 
 def prettyprint(products):
     """
     This func creates nice ASCII-based sheet to display data in terminal
     """
-    keys = products[1].keys()
-    table = PrettyTable(keys)
+    fields_to_show = products[1].keys()
+    table = PrettyTable(fields_to_show)
     for product in products:
-        vals = [product[key] for key in keys]
+        vals = [product[key] for key in fields_to_show]
         table.add_row(vals)
     print(table)
 
 
-async def fetch_product_list(keys):
+async def fetch_product_list(fields_to_show):
     """
     Asynchorously fetching products with specified params from emarket api
-    :param keys: product params required to fetch (name, price, ram etc)
+    :param fields_to_show: product params required to fetch (name, price, ram etc)
     """
-    query = '*'.join(keys)     # name*price*processor
-    params = {'q': query}
+    params = {'q': fields_to_show}
     async with aiohttp.ClientSession() as session:
-        async with session.get(URL, params=params) as r:
+        async with session.post(URL, json=params) as r:
             return await r.json()
 
 
-async def timer(sec=10):
+async def timer(sec=100):
     """
     Prints seconds. It makes no real sense, just playing with asynchronous.
     """
@@ -41,8 +41,8 @@ async def timer(sec=10):
         await asyncio.sleep(1)
 
 
-async def main(keys):
-    task_fetch = asyncio.ensure_future(fetch_product_list(keys))
+async def main(fields_to_show):
+    task_fetch = asyncio.ensure_future(fetch_product_list(fields_to_show))
     task_timer = asyncio.ensure_future(timer())
     tasks = [task_timer, task_fetch]
 
@@ -61,10 +61,10 @@ async def main(keys):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        keys = sys.argv[1:]
+        fields_to_show = sys.argv[1:]
     else:
-        keys = ['name']
+        fields_to_show = ['name']
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(keys))
+    loop.run_until_complete(main(fields_to_show))
     loop.close()
